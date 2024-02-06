@@ -1,3 +1,9 @@
+---
+title: A simple ROS2 demo using Fastdds
+date: 2023-04-20
+categories: [DDS]
+tags: [dds, ros2]     # TAG names should always be lowercase
+---
 [TOC]
 
 # Statement

@@ -1,3 +1,9 @@
+---
+title: lambda function in C++
+date: 2023-10-02
+categories: [C++]
+tags: [c++]     # TAG names should always be lowercase
+---
 A lambda expression in C++ is a way of defining an anonymous function object (also called a closure) that can be used inline or passed as an argument to another function. It was introduced in C++11 as a more convenient and concise way of creating functors, which are objects that can be called like functions.
 
 A lambda expression has the following general syntax:

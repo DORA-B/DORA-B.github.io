@@ -1,3 +1,9 @@
+---
+title: Tail-Call optimization
+date: 2023-10-18
+categories: [Compiler]
+tags: [compiler, optimization]     # TAG names should always be lowercase
+---
 <center> <font size="5">Tail Call Basics</font></center>
 
 Tail call is any function that is in tail position, the final action to be peformed before a function returns.

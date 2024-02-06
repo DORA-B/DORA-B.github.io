@@ -1,3 +1,9 @@
+---
+title: Different HPC focused Containerization Solutions
+date: 2023-10-05
+categories: [Linux]
+tags: [linux]     # TAG names should always be lowercase
+---
 <center><font size="5">1. Why WASM containerzation in HPC systems recommended in the paper in the "privilege aspect"</font></center>
 <center><font size="5">2. How functions in Wasm be implemented"</font></center>
 

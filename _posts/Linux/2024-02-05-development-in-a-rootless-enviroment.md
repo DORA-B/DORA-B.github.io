@@ -1,3 +1,9 @@
+---
+title: Development in a rootless environment
+date: 2024-02-05
+categories: [Linux]
+tags: [linux, development]     # TAG names should always be lowercase
+---
 # How to install packages
 
 1. Using brew, Homebrew/Linuxbrew

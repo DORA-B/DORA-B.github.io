@@ -1,3 +1,9 @@
+---
+title: Scheduler in thread-pool
+date: 2023-10-02
+categories: [Scheduler]
+tags: [scheduler]     # TAG names should always be lowercase
+---
 # Classfication of the Scheduler in Thread pool
 
 The capability of the thread pool scheduler is carried by SchedulerGroup, which is a general task scheduler.

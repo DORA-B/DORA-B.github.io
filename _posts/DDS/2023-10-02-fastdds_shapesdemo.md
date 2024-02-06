@@ -1,3 +1,9 @@
+---
+title: Fastdds Shapes Demo
+date: 2023-10-02
+categories: [DDS]
+tags: [dds]     # TAG names should always be lowercase
+---
 # Download and try these two demo 
 
 Follow the steps described in [https://eprosima-shapes-demo.readthedocs.io/en/latest/installation/linux_sources.html]

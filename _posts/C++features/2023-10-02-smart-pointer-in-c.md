@@ -1,3 +1,9 @@
+---
+title: Smart pointer in C++
+date: 2023-10-02
+categories: [C++]
+tags: [c++]     # TAG names should always be lowercase
+---
 1. Understand what smart pointers are and how they differ from raw pointers. Smart pointers are classes that manage the lifetime of dynamically allocated objects using reference counting or ownership semantics. Raw pointers are just plain addresses that do not have any responsibility for the objects they point to.
 
 2. Learn how to create and use std::shared_ptr, which is a smart pointer that retains shared ownership of an object through a pointer. Several std::shared_ptr objects may own the same object, and the object is destroyed when the last remaining std::shared_ptr owning it is destroyed. You can use the constructor, the assignment operator, or the reset() method to associate a std::shared_ptr with an object. You can also use the get() method to access the raw pointer, or the use_count() method to get the number of std::shared_ptr objects sharing ownership of the object.

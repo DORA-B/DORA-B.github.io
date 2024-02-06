@@ -1,3 +1,9 @@
+---
+title: Different version of ROS
+date: 2023-10-02
+categories: [ROS]
+tags: [ros, introduction]     # TAG names should always be lowercase
+---
 # Distributions of ROS
 
 A ROS distribution is a versioned set of ROS packages. The purpose of ROS distributions is to let developers work against a ralaively stable codebase until they are ready to roll everything foward.

@@ -1,3 +1,9 @@
+---
+title: Decoration In Python
+date: 2024-02-04
+categories: [Python]
+tags: [python]     # TAG names should always be lowercase
+---
 Decorations in Python
 =====================
 

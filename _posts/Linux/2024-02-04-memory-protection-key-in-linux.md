@@ -1,3 +1,9 @@
+---
+title: Memory protection key in Linux
+date: 2024-02-04
+categories: [Linux]
+tags: [linux]     # TAG names should always be lowercase
+---
 Memory Protection Keys
 ===
 

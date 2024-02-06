@@ -1,3 +1,9 @@
+---
+title: Debug in WasmEdge
+date: 2023-11-06
+categories: [WebAssembly]
+tags: [wasm, development]     # TAG names should always be lowercase
+---
 # Download and install the WasmEdge Env
 + Follow the [tutorials](https://wasmedge.org/docs/start/install/), Build WasmEdge from source: Build on Linux
 + Build in debug mode

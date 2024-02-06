@@ -1,3 +1,9 @@
+---
+title: Yield Keyword Classmethod and static method and property method in python
+date: 2024-02-04
+categories: [Python]
+tags: [python]     # TAG names should always be lowercase
+---
 [Reference](https://elfi-y.medium.com/python-properties-and-class-methods-a6c7ad69b0f1)
 
 # What is Yield Keyword in Python
