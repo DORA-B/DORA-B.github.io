@@ -1,3 +1,9 @@
+---
+title: lambda function in C++
+date: 2023-04-20
+categories: [DDS]
+tags: [dds, ros2]     # TAG names should always be lowercase
+---
 # Using IDL to define a data type
 
 Supported IDL types

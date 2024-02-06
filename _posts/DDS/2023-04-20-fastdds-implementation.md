@@ -1,3 +1,9 @@
+---
+title: Fastdds inplementation
+date: 2023-04-20
+categories: [DDS]
+tags: [dds]     # TAG names should always be lowercase
+---
 # The DCPS conceptual model
 
 DDS is a Data-Centric Publish Subscribe(DCPS) model, and three key application entities are defined in its iimplementation: 

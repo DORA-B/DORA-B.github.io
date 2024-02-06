@@ -1,3 +1,9 @@
+---
+title: Perf in Linux
+date: 2023-11-06
+categories: [Linux]
+tags: [linux]     # TAG names should always be lowercase
+---
 Perf Commands:
 > perf 
 

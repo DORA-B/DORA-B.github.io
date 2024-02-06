@@ -1,3 +1,9 @@
+---
+title: List Assign in Python
+date: 2024-02-05
+categories: [Python]
+tags: [python]     # TAG names should always be lowercase
+---
 List Assign with different strategies in Python
 ===============================================
 

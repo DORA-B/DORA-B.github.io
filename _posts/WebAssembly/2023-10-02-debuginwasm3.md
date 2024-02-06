@@ -1,3 +1,9 @@
+---
+title: Debug in Wasm3
+date: 2023-10-02
+categories: [WebAssembly]
+tags: [wasm, development]     # TAG names should always be lowercase
+---
 [toc]
 
 # During installing wabt

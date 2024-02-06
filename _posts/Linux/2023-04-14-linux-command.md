@@ -1,3 +1,9 @@
+---
+title: Linux Command
+date: 2023-04-14
+categories: [Linux]
+tags: [linux]     # TAG names should always be lowercase
+---
 # differences between `--user` and '-U' in pip command
 
 -U: the same as '--upgrade', if the requirement has been downlaoded, upgrade to the lastest version

@@ -1,3 +1,9 @@
+---
+title: Nvidia Driver in Linux Ubuntu
+date: 2024-01-04
+categories: [Linux]
+tags: [linux]     # TAG names should always be lowercase
+---
 NVIDIA-Driver in Linux Ubuntu
 =============================
 

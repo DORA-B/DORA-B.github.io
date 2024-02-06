@@ -1,3 +1,9 @@
+---
+title: Introduction to DDS
+date: 2023-04-23
+categories: [DDS]
+tags: [dds, introduction]     # TAG names should always be lowercase
+---
 # Data Distribution Service
 To solve the problem when massive data is acquired to be distributed Real-time, efficiently, flexibly. 
 Data is the center.

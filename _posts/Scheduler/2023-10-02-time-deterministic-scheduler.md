@@ -1,3 +1,9 @@
+---
+title: Time Deterministic Scheduler
+date: 2023-10-02
+categories: [Scheduler]
+tags: [scheduler]     # TAG names should always be lowercase
+---
 <font size='5'><center>Time-deterministic scheduler</center></font>
 
 The time determination scheduler is the specific implementation of the "deterministic scheduling time" in the figure, including the establishment of the "deterministic execution environment" of the "preconditions" and the statistics of the user task WCET. Time-based deterministic scheduling can be broken down into:

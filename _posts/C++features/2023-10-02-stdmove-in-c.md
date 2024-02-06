@@ -1,3 +1,9 @@
+---
+title: stdmove in C++
+date: 2023-10-02
+categories: [C++]
+tags: [c++]     # TAG names should always be lowercase
+---
 This documents mainly discuss the transfer from Value Categories to Std::Move 
 
 ==[reference of value categories](https://en.cppreference.com/w/cpp/language/value_category)==

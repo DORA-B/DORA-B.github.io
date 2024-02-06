@@ -1,3 +1,9 @@
+---
+title: Bounds Checking Strategy--mprotect based protection
+date: 2024-02-04
+categories: [WebAssembly]
+tags: [wasm]     # TAG names should always be lowercase
+---
 Bounds checking strategy - mprotect()-based protection - Does not saturate the CPU like other mechanisms
 ===
 

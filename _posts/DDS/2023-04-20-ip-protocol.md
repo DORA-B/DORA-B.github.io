@@ -1,3 +1,9 @@
+---
+title: Ip protocol
+date: 2023-04-20
+categories: [DDS]
+tags: [dds, protocol]     # TAG names should always be lowercase
+---
 SOME/IP: Scalabeservice-Oriented Mideleware over IP, IP-based extensible service-oriented middleware.
 
 In the protocol architecture of Ethernet in vehicles, SOME/IP is in the application layer, Provides a service-oriented communication interface.
