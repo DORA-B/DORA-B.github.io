@@ -245,6 +245,57 @@ firefox perf.svg  # or any other web browser, etc.
 perf script -i hellotest.data | ~/Github/FlameGraph/stackcollapse-perf.pl > hellotest.perf-folded
 ~/Github/FlameGraph/flamegraph.pl perfhellotest.perf-folded > perfhellotest.svg
 ```
+
+
+A bash shell script
+```bash
+#!/bin/bash
+
+# Check if the wasm file is provided
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <path/to/file.wasm>"
+    exit 1
+fi
+
+WASM_FILE="$1"
+
+# Ensure the file exists
+if [ ! -f "$WASM_FILE" ]; then
+    echo "Error: File $WASM_FILE does not exist."
+    exit 1
+fi
+
+# Derive names
+BASE_NAME=$(basename -- "$WASM_FILE")
+NAME="${BASE_NAME%.*}"
+
+# Convert wasm to wat
+wasm2wat "$WASM_FILE" > "${NAME}.wat"
+echo "Converted ${WASM_FILE} to ${NAME}.wat"
+
+# Record the performance
+perf record -g -o "perf.${NAME}.raw" wasm3 "$WASM_FILE"
+echo "Recorded performance to perf.${NAME}.raw"
+
+# Inject perf data
+perf inject -v -s -i "perf.${NAME}.raw" -o "perf.${NAME}.data"
+echo "Injected data to perf.${NAME}.data"
+
+# Report the execution process to txt
+perf report --stdio --show-total-period -i "perf.${NAME}.data" > "perf.${NAME}.txt"
+echo "Report data to perf.${NAME}.txt"
+
+# Generate folded stack file
+perf script -i "perf.${NAME}.data" | ~/Github/FlameGraph/stackcollapse-perf.pl > "perf.${NAME}.perf-folded"
+echo "Generated folded stack file perf.${NAME}.perf-folded"
+
+# Generate the FlameGraph
+~/Github/FlameGraph/flamegraph.pl "perf.${NAME}.perf-folded" > "perf.${NAME}.svg"
+echo "Generated FlameGraph perf.${NAME}.svg"
+
+echo "All done. Check out the generated SVG for the FlameGraph."
+```
+
 ![ResizeMemory overhead ratio](/commons/images/3141911-20231106134358289-1778534097.png)
 
 # References
