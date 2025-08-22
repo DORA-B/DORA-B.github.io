@@ -1,8 +1,8 @@
 ---
 title: Conan Learning
 date: 2023-06-16
-categories: [InternshipTips]
-tags: [internship]     # TAG names should always be lowercase
+categories: [Project Management]
+tags: [proj_man]     # TAG names should always be lowercase
 ---
 Originally compiling:
 
