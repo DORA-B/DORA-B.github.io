@@ -1,5 +1,5 @@
 ---
-title: Compile-llvm-test-suit
+title: Compile-llvm-test-suit-story-1
 date: 2025-01-11
 categories: [Environment]
 tags: [linux]     # TAG names should always be lowercase
@@ -11,8 +11,10 @@ published: false
 > Problem3: How to use musl to compile the benchmark? (in order to get a smaller library)
 
 - Compiler: arm-linux-gnueabihf/arm-linux-gnueabi
-- 
 
+## Resources
+- [test-suite Guide, Configuration](https://llvm.org/docs/TestSuiteGuide.html)
+- [Github link](https://github.com/llvm/llvm-test-suite.git)
 
 ## Instructions to build a single benchmark
 ```bash
@@ -32,6 +34,9 @@ cmake \
   ../llvm-test-suite
 
 ```
+
+## Benchmarks introduction 
+
 However, the gotten benchmarks in the directory include all the different benchmarks already, cannot get one subbenchmark out.
 ```bash
 ├── Bitcode
@@ -49,6 +54,27 @@ However, the gotten benchmarks in the directory include all the different benchm
 ├── SingleSource
 └── tools
 ```
+
+- `SingleSource/`
+  Contains test programs that are only a single source file in size. A subdirectory may contain several programs.
+
+- `MultiSource/`
+  Contains subdirectories which entire programs with multiple source files. Large benchmarks and whole applications go here.
+
+- `MicroBenchmarks/`
+  Programs using the google-benchmark library. The programs define functions that are run multiple times until the measurement results are statistically significant.
+
+- `External/`
+  Contains descriptions and test data for code that cannot be directly distributed with the test-suite. The most prominent members of this directory are the SPEC CPU benchmark suites. See External Suites.
+
+- `Bitcode/`
+  These tests are mostly written in LLVM bitcode.
+
+- `CTMark/`
+  Contains symbolic links to other benchmarks forming a representative sample for compilation performance measurements.
+
+
+
 ## qemu 
 
 ```bash
