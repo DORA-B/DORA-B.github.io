@@ -57,8 +57,7 @@ sudo docker run --rm grammatech/ddisasm:latest ddisasm --version
 ```
 - disassembling the binary, generate the gtirb and asm file
 ```shell
-sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest ddisasm Shootout-nestedloop --ir Shootout-nestedlo
-op.gtirb
+sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest ddisasm Shootout-nestedloop --ir Shootout-nestedloop.gtirb
 Building the initial gtirb representation [   4ms]
 Processing module: Shootout-nestedloop
     disassembly              load [   5ms]    compute [  23ms]  transform WARNING: Could not find GLOBAL/WEAK symbol for _DYNAMIC
@@ -66,8 +65,7 @@ Processing module: Shootout-nestedloop
     SCC analysis                              compute [   0ms]  transform [   0ms]
     no return analysis       load [   0ms]    compute [   0ms]  transform [   0ms]
     function inference       load [   0ms]    compute [   0ms]  transform [   0ms]
-sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest ddisasm Shootout-nestedloop --asm Shootout-nestedl
-oop-ddisasm.s
+sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest ddisasm Shootout-nestedloop --asm Shootout-nestedloop-ddisasm.s
 Building the initial gtirb representation [   4ms]
 Processing module: Shootout-nestedloop
     disassembly              load [   5ms]    compute [  23ms]  transform WARNING: Could not find GLOBAL/WEAK symbol for _DYNAMIC
@@ -79,8 +77,7 @@ Printing assembler [   6ms]
 ```
 - use gtirb-pprinter to view the generated gtirb file
 ```shell
-sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest gtirb-pprinter --ir Shootout-nestedloop.gtirb --as
-m gtirbpprinter-shootout-nestedloop.s
+sudo docker run --rm -v $PWD:/workspace -w /workspace grammatech/ddisasm:latest gtirb-pprinter --ir Shootout-nestedloop.gtirb --asm gtirbpprinter-shootout-nestedloop.s
 [sudo] password for qingchen: 
 [INFO] (/usr/local/src/gtirb-pprinter/src/gtirb_pprinter/driver/pretty_printer.cpp:291)  Reading GTIRB file:     "Shootout-nestedloop.gtirb"
 [INFO] (/usr/local/src/gtirb-pprinter/src/gtirb_pprinter/driver/pretty_printer.cpp:577)  Generating assembly file for module Shootout-nestedloop
