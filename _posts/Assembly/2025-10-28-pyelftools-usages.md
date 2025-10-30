@@ -7,3 +7,4 @@ published: false
 ---
 
 > Problem: I need to find all the references of all the entries of the GOT, and convert the instruction with their references with the correct labels --> normalization.
+
