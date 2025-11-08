@@ -631,3 +631,79 @@ void ArmPrettyPrinter::printOpIndirect(
 }
 ```
 
+## how to print the function calls 
+
+Here are some code snippets about how the functions at different sections are printed.
+- In rel.plt section, this is more special, because the symbols in rel.plt will be firstly accessed by plt_stubs in .plt seciton, then calls to .got section, but here is directly mapped to the rel.plt's symbol (ProxyBlock)
+```assembly
+            add r0, pc, r0
+            bl fwrite
+.arm
+
+            mov r0, #1
+            bl exit
+```
+- In .text
+```assembly
+            ldr r0, .L_10c04
+            mov r1, r4
+            ldr r0, [pc, r0]
+            bl print_path
+.arm
+
+            mov r0, #10
+            bl putchar
+```
+### Overview
+The pretty-printer does not compute symbols from raw immediates. It reads GTIRB symbolic expressions attached to the ByteInterval and prints symbol names when those expressions exist.
+
+1. Instruction operand handling
+- Entry: ArmPrettyPrinter::printOperand(...)
+- Action: fetches the ByteInterval symbolic expression for the instruction address: 
+block.getByteInterval()->getSymbolicExpression(ea - *block.getByteInterval()->getAddress())
+
+2. Check for symbolic immediate
+- Entry: ArmPrettyPrinter::printOpImmediate(...)
+- Action: calls getSymbolicImmediate(symbolic) to see if the operand is a gtirb::SymAddrConst.
+
+3. Print symbolic expression (symbol + addend)
+- Entry: PrettyPrinterBase::printSymbolicExpression(...)
+- Action: prints the symbol reference (sexpr->Sym) and any addend.
+
+4. Convert gtirb::Symbol* → text
+- Entry: PrettyPrinterBase::printSymbolReference(...)
+- Action: handles forwarded symbols, skip policy, or delegates to getSymbolName(...) to format the final name.
+
+5. Final formatting & ambiguous-symbol handling
+- Entry: PrettyPrinterBase::getSymbolName(...)
+- Action: formats and applies any disambiguation/renaming.
+
+#### Find the rel.plt functions
+1. For printing the rel.plt functions, such as the `exit` function in the previous example, the general step is like:
+- a. Instruction → symbolic expression lookup: Fetch the symbolic expression at the instruction address.
+- b. Symbolic expression contains a gtirb::SymAddrConst referencing a symbol (e.g., a PLT stub like FUN_106c8). At the address at `bl #imm`, `#imm` is the address of the plt stub in the plt section, there is no symbol name, it is only a general CodeBlock.
+- c. Forwarding check (this is the key): queries the SymbolForwarding auxdata via aux_data::getForwardedSymbol(Symbol) if want to find the real name, which is in the related ProxyBlock.
+- d. Use forwarded name if present: If a forwarded symbol is found, the pretty-printer prints the forwarded symbol name (e.g., printf) instead of the stub name. If the forwarded name is skipped by policy it may print 0 and append a warning comment instead.
+
+### Where the symbols come from
+The gtirb::SymAddrConst attached to the ByteInterval is created before printing (e.g., by GTIRB emitters, ELF→GTIRB conversion, relocation processing, or other analysis tools). The pretty-printer only reads this GTIRB metadata.
+
+- Helpful function pointers (files) 
+  - ArmPrettyPrinter.cpp
+  - ArmPrettyPrinter::printOperand(...)
+  - ArmPrettyPrinter::printOpImmediate(...)
+  - PrettyPrinter.cpp
+  - PrettyPrinterBase::getSymbolicImmediate(...)
+  - PrettyPrinterBase::printSymbolicExpression(...)
+  - PrettyPrinterBase::printSymbolReference(...)
+  - PrettyPrinterBase::getSymbolName(...)
+  - PrettyPrinterBase::computeFunctionInformation(...) — builds mappings from auxdata (function names/blocks)
+- Edge cases / notes
+  - If no SymAddrConst exists, the immediate is printed as a raw number.
+  - If a symbol is skipped by policy, the printer may output 0 and append a warning comment.
+  - The mapping of an immediate address → gtirb::Symbol is produced outside the pretty-printer (GTIRB/auxdata or the importer).
+
+# Gtirb Functions (Python Version)
+
+- Found blocks based on the addresses: `Module(AuxDataContainer).code/data_blocks_on/at(self, addrs: typing.Union[int, range]) -> typing.Iterable[DataBlock]`
+- Found edges that are in/out of the current `CfgNode` (CodeBlock): `out_edges(self, node: CfgNode) -> Iterator[Edge]`, `in_edges(self, node: CfgNode) -> Iterator[Edge]`
