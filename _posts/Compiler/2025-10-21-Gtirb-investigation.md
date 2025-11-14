@@ -703,6 +703,216 @@ The gtirb::SymAddrConst attached to the ByteInterval is created before printing 
   - If a symbol is skipped by policy, the printer may output 0 and append a warning comment.
   - The mapping of an immediate address → gtirb::Symbol is produced outside the pretty-printer (GTIRB/auxdata or the importer).
 
+
+## How pprinter decides data types?
+An example shows the different types of symbol contents: `.string`, `.ascii` in `.rodata`
+```asm
+#===================================
+.section .rodata ,"a",%progbits
+#===================================
+
+.align 2
+.L_10e98:
+          .ascii " "
+.L_10e99:
+          .string "%d"
+.L_10e9c:
+          .string "Out of memory.\n"
+.L_10eac:
+          .string "Shortest path is %d in cost. "
+.L_10eca:
+          .string "Path is: "
+.L_10ed4:
+          .string "Usage: dijkstra <NUM_NODES> <INPUT_FILE>\n"
+.L_10efe:
+          .string "r"
+.L_10f00:
+          .string "Shortest path is 0 in cost. Just stay where you are."
+#===================================
+# end section .rodata
+#===================================
+
+#===================================
+.bss
+#===================================
+
+.align 2
+#-----------------------------------
+.globl qHead
+.type qHead, %object
+.size qHead, 4
+#-----------------------------------
+qHead:
+          .zero 4
+#-----------------------------------
+.globl g_qCount
+.type g_qCount, %object
+.size g_qCount, 4
+#-----------------------------------
+g_qCount:
+          .zero 4
+```
+
+- `printString` in `PrettyPrinter`
+```cpp
+void ElfPrettyPrinter::printString(std::ostream& Stream,
+                                   const gtirb::DataBlock& Block,
+                                   uint64_t Offset, bool NullTerminated) {
+  Stream << (NullTerminated ? elfSyntax.string() : elfSyntax.ascii()) << " \"";
+
+  auto Bytes = Block.bytes<uint8_t>();
+  auto It = boost::make_iterator_range(Bytes.begin() + Offset, Bytes.end());
+  for (auto Byte : It) {
+    if (Byte != 0) {
+      Stream << syntax.escapeByte(Byte);
+    }
+  }
+
+  Stream << '"';
+}
+```
+- print block contents function
+```cpp
+void PrettyPrinterBase::printBlockContents(std::ostream& os,
+                                           const gtirb::DataBlock& dataObject,
+                                           uint64_t offset) {
+  if (offset > dataObject.getSize()) {
+    return;
+  }
+
+  const auto* foundSymbolic =
+      dataObject.getByteInterval()->getSymbolicExpression(
+          dataObject.getOffset() + offset);
+  auto dataObjectBytes = dataObject.bytes<uint8_t>();
+  if (std::all_of(dataObjectBytes.begin() + offset, dataObjectBytes.end(),
+                  [](uint8_t x) { return x == 0; }) &&
+      !foundSymbolic)
+    printZeroDataBlock(os, dataObject, offset);
+  else
+    printNonZeroDataBlock(os, dataObject, offset);
+}
+```
+- then print the None zero data block
+```cpp
+void PrettyPrinterBase::printNonZeroDataBlock(
+    std::ostream& os, const gtirb::DataBlock& dataObject, uint64_t offset) {
+  if (dataObject.getSize() - offset == 0) {
+    return;
+  }
+  gtirb::Offset CurrOffset = gtirb::Offset(dataObject.getUUID(), offset);
+
+  // If this is a string, print it as one.
+  std::optional<std::string> Type = aux_data::getEncodingType(dataObject);
+
+  if (Type == "string" || Type == "ascii") {
+    printComments(os, CurrOffset, dataObject.getSize() - offset);
+
+    std::stringstream DataLine;
+    printEA(DataLine, *dataObject.getAddress() + offset);
+    printString(DataLine, dataObject, offset, Type == "string");
+    printCommentableLine(DataLine, os, *dataObject.getAddress() + offset);
+    os << '\n';
+    return;
+  }
+
+  // Otherwise, print each byte and/or symbolic expression in order.
+  auto ByteRange = dataObject.bytes<uint8_t>();
+  uint64_t ByteI = dataObject.getOffset() + offset;
+
+  // print comments at the right location efficiently (with a single iterator).
+  bool HasComments = false;
+  std::map<gtirb::Offset, std::string>::const_iterator CommentsIt;
+  std::map<gtirb::Offset, std::string>::const_iterator CommentsEnd;
+  if (this->LstMode == ListingDebug) {
+    if (const auto* Comments = aux_data::getComments(module)) {
+      HasComments = true;
+      CommentsIt = Comments->lower_bound(CurrOffset);
+      CommentsEnd = Comments->end();
+    }
+  }
+  auto printCommentsBetween = [&](uint64_t Size) {
+    gtirb::Offset EndOffset = CurrOffset;
+    EndOffset.Displacement += Size;
+    for (; CommentsIt != CommentsEnd && CommentsIt->first < EndOffset;
+         ++CommentsIt) {
+      os << syntax.comment();
+      if (CommentsIt->first.Displacement > CurrOffset.Displacement)
+        os << "+" << CommentsIt->first.Displacement - CurrOffset.Displacement
+           << ":";
+      os << " " << CommentsIt->second << '\n';
+    }
+  };
+
+  for (auto ByteIt = ByteRange.begin() + offset; ByteIt != ByteRange.end();) {
+
+    if (auto FoundSymExprRange =
+            dataObject.getByteInterval()->findSymbolicExpressionsAtOffset(
+                ByteI);
+        !FoundSymExprRange.empty()) {
+      const auto SEE = FoundSymExprRange.front();
+      auto Size = getSymbolicExpressionSize(SEE);
+      if (HasComments) {
+        printCommentsBetween(Size);
+      }
+      gtirb::Addr EA = *dataObject.getAddress() + CurrOffset.Displacement;
+      std::stringstream DataLine;
+      printEA(DataLine, EA);
+      printSymbolicData(DataLine, SEE, Size, Type);
+      if (Size == 0) {
+        LOG_ERROR
+            << "ERROR: " << EA
+            << ": Size 0 SymbolicExpression: break infinite loop of printing\n";
+      }
+      printCommentableLine(DataLine, os, *dataObject.getAddress() + offset);
+      os << '\n';
+      printSymbolicDataFollowingComments(os, EA);
+      ByteI += Size;
+      ByteIt += Size;
+      CurrOffset.Displacement += Size;
+    } else {
+      if (HasComments) {
+        printCommentsBetween(1);
+      }
+
+      std::stringstream DataLine;
+      printEA(DataLine, *dataObject.getAddress() + CurrOffset.Displacement);
+      printByte(DataLine,
+                static_cast<std::byte>(static_cast<unsigned char>(*ByteIt)));
+      printCommentableLine(DataLine, os,
+                           *dataObject.getAddress() + CurrOffset.Displacement);
+      os << '\n';
+      ByteI++;
+      ByteIt++;
+      CurrOffset.Displacement++;
+    }
+  }
+}
+```
+- How to decide the Symbolic data type
+```cpp
+void PrettyPrinterBase::printSymbolicDataType(
+    std::ostream& os,
+    const gtirb::ByteInterval::ConstSymbolicExpressionElement& /* SEE */,
+    uint64_t Size, std::optional<std::string> /* Type */) {
+  switch (Size) {
+  case 1:
+    os << syntax.byteData();
+    break;
+  case 2:
+    os << syntax.wordData();
+    break;
+  case 4:
+    os << syntax.longData();
+    break;
+  case 8:
+    os << syntax.quadData();
+    break;
+  default:
+    assert(!"Can't print symbolic expression of given size!");
+    break;
+  }
+}
+```
 # Gtirb Functions (Python Version)
 
 - Found blocks based on the addresses: `Module(AuxDataContainer).code/data_blocks_on/at(self, addrs: typing.Union[int, range]) -> typing.Iterable[DataBlock]`
