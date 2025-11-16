@@ -351,6 +351,56 @@ def x86g_calculate_condition(state, cond, cc_op, cc_dep1, cc_dep2, cc_ndep):
         return pc_calculate_condition_simple(state, cond, cc_op, cc_dep1, cc_dep2, cc_ndep, platform="X86")
     else:
         return pc_calculate_condition(state, cond, cc_op, cc_dep1, cc_dep2, cc_ndep, platform="X86")
+# in arm, the computation is like:
+
+def armg_calculate_condition(state, cond_n_op, cc_dep1, cc_dep2, cc_dep3):
+    concrete_cond_n_op = op_concretize(cond_n_op)
+
+    cond = concrete_cond_n_op >> 4
+    cc_op = concrete_cond_n_op & 0xF
+    inv = cond & 1
+
+    concrete_cond = op_concretize(cond)
+    flag = None
+
+    # NOTE: adding constraints afterwards works here *only* because the constraints are actually useless, because we
+    # require cc_op to be unique. If we didn't, we'd need to pass the constraints into any functions called after the
+    # constraints were created.
+
+    if concrete_cond == ARMCondAL:
+        flag = claripy.BVV(1, 32)
+    elif concrete_cond in [ARMCondEQ, ARMCondNE]:
+        zf = armg_calculate_flag_z(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ zf
+    elif concrete_cond in [ARMCondHS, ARMCondLO]:
+        cf = armg_calculate_flag_c(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ cf
+    elif concrete_cond in [ARMCondMI, ARMCondPL]:
+        nf = armg_calculate_flag_n(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ nf
+    elif concrete_cond in [ARMCondVS, ARMCondVC]:
+        vf = armg_calculate_flag_v(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ vf
+    elif concrete_cond in [ARMCondHI, ARMCondLS]:
+        cf = armg_calculate_flag_c(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        zf = armg_calculate_flag_z(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ (cf & ~zf)
+    elif concrete_cond in [ARMCondGE, ARMCondLT]:
+        nf = armg_calculate_flag_n(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        vf = armg_calculate_flag_v(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ (1 & ~(nf ^ vf))
+    elif concrete_cond in [ARMCondGT, ARMCondLE]:
+        nf = armg_calculate_flag_n(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        vf = armg_calculate_flag_v(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        zf = armg_calculate_flag_z(state, cc_op, cc_dep1, cc_dep2, cc_dep3)
+        flag = inv ^ (1 & ~(zf | (nf ^ vf)))
+
+    if flag is not None:
+        return flag
+
+    l.error("Unrecognized condition %d in armg_calculate_condition", concrete_cond)
+    raise SimCCallError("Unrecognized condition %d in armg_calculate_condition" % concrete_cond)
+
 ```
 The code above is to **check whether the x86 Carry Flag (CF) would cause a conditional branch** to be taken — i.e., _“Would a `jb` (jump if below) or `jc` (jump if carry) actually occur?”_
 
@@ -367,6 +417,7 @@ This makes sense in context when:
 So the code here is to check whether the cf will trigger a branch here, not to extract the cflags.
 
 ```python
+cf_normal = (claripy.LShR(eflags, s_ccall.data["X86"]["CondBitOffsets"]["G_CC_SHIFT_C"]) & 1 ) # normal cf
 cf_shl = claripy.Extract(0, 0, 
             s_ccall.x86g_calculate_condition(
             state,

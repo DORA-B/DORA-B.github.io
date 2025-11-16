@@ -6,7 +6,7 @@ tags: [assembly,python,angr]     # TAG names should always be lowercase
 published: false
 ---
 
-> Problem: I need to verify different condition codes between guset and hose symbolic machines, but how to verify them across different isas?
+> Problem: I need to verify different condition codes between guest and hose symbolic machines, but how to verify them across different isas?
 
 # Overviews
 
