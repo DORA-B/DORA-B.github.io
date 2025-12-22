@@ -913,7 +913,56 @@ void PrettyPrinterBase::printSymbolicDataType(
   }
 }
 ```
+
+## How pprinter find and print multiple level data pointers?
+- for example, there is a reference:
+```assembly
+# data arrays
+main.text:
+  .word .L_10ff4
+  .word .L_11011
+  .word .L_1102b
+  .word .L_1104a
+  .word .L_1106d
+  .word .L_11093
+  .word .L_110b9
+# function arrays
+main.pBitCntFunc:
+  .word bit_count
+  .word bitcount
+  .word ntbl_bitcnt
+  .word ntbl_bitcount
+  .word BW_btbl_bitcount
+  .word AR_btbl_bitcount
+  .word bit_shifter
+```
+- Data Reference Printing
+Pointer tables like:
+
+```
+main.text:
+  .word .L_10ff4
+  .word .L_11011
+```
+
+are emitted from the data-block printing path:
+
+- `PrettyPrinterBase::printSection` iterates blocks and calls `printBlock` for `DataBlock` instances. `printBlockContents` selects non-zero data.
+- `printNonZeroDataBlock` scans the owning `ByteInterval` for symbolic expressions at each offset via `findSymbolicExpressionsAtOffset`.
+- Each symbolic expression becomes a data directive (`.byte/.word/.long/.quad`) chosen by `printSymbolicDataType` based on size.
+- The size is read from auxdata `SymbolicExpressionSizes`, or inferred from the largest 1/2/4/8-byte data block at that offset.
+- The symbol name itself is printed by `printSymbolicExpression` -> `printSymbolReference`, using forwarding/skip rules.
+
+Key code paths:
+
+- `src/gtirb_pprinter/PrettyPrinter.cpp`: `printNonZeroDataBlock`, `printSymbolicData`, `printSymbolicExpression`, `printSymbolReference`.
+- `src/gtirb_pprinter/AuxDataUtils.cpp`: `getSymbolicExpressionSize`.
+
+Note: the pretty-printer does not chase pointers. It prints symbolic expressions already present in the GTIRB `ByteInterval` for the data block.
+
+
 # Gtirb Functions (Python Version)
 
 - Found blocks based on the addresses: `Module(AuxDataContainer).code/data_blocks_on/at(self, addrs: typing.Union[int, range]) -> typing.Iterable[DataBlock]`
 - Found edges that are in/out of the current `CfgNode` (CodeBlock): `out_edges(self, node: CfgNode) -> Iterator[Edge]`, `in_edges(self, node: CfgNode) -> Iterator[Edge]`
+
